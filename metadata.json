@@ -1,0 +1,5 @@
+{
+  "name": "LLM Chaining Explorer",
+  "description": "An interactive web application demonstrating various LLM chaining strategies with live examples powered by the Gemini API. Explore simple, sequential, and router chains.",
+  "requestFramePermissions": []
+}
