@@ -2,13 +2,12 @@ substitutions:
   _REGION: 'us-east5'
   _PROJECT_ID: 'gen-lang-client-0473731579'
   _AR_REPO: 'google-cloud-run-source-deploy'
-  _SERVICE_NAME: 'LLM-Chain'
+  _SERVICE_NAME: 'llm-chain'
   _COMMIT_SHA: '${SHORT_SHA}'
    
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${_COMMIT_SHA}', '.']
-    dir: 'apps/<subfolder>'
 
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${_COMMIT_SHA}']
@@ -31,6 +30,8 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  substitionOptions: 'ALLOW_LOOSE'
 
 timeout: '300s'  
+
 
