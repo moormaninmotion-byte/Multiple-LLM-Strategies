@@ -4,6 +4,9 @@ import SimpleChainDemo from './components/demos/SimpleChainDemo';
 import SequentialChainDemo from './components/demos/SequentialChainDemo';
 import RouterChainDemo from './components/demos/RouterChainDemo';
 import AgentExecutorDemo from './components/demos/AgentExecutorDemo';
+import MapReduceDemo from './components/demos/MapReduceDemo';
+import ReflexionDemo from './components/demos/ReflexionDemo';
+import PlannerExecutorDemo from './components/demos/PlannerExecutorDemo';
 
 export const STRATEGIES: Strategy[] = [
   {
@@ -105,5 +108,88 @@ response = agent.run(user_query)
 print(response)
     `,
     demoComponent: AgentExecutorDemo,
+  },
+  {
+    id: StrategyId.MAP_REDUCE,
+    name: 'Map-Reduce',
+    description: 'A strategy for processing large documents that don\'t fit into a single LLM context window. The document is split into smaller chunks (Map), an LLM processes each chunk in parallel, and then a final LLM call combines the results into a single output (Reduce). Ideal for summarizing long texts or asking questions about a large corpus of information.',
+    pseudoCode: `
+# 1. Load a large document
+large_document = load_text("long_book.txt")
+
+# 2. Split the document into smaller chunks
+chunks = split_text(large_document, chunk_size=4000)
+
+# 3. MAP step: Process each chunk independently
+map_results = []
+for chunk in chunks:
+    prompt = f"Summarize the key points in this text: {chunk}"
+    summary = llm.generate(prompt)
+    map_results.append(summary)
+
+# 4. REDUCE step: Combine the map results
+combined_summary = "\\n".join(map_results)
+final_prompt = f"Create a final, cohesive summary from the following points: {combined_summary}"
+final_result = llm.generate(final_prompt)
+
+print(final_result)
+    `,
+    demoComponent: MapReduceDemo,
+  },
+  {
+    id: StrategyId.REFLEXION,
+    name: 'Reflexion',
+    description: 'An advanced agent strategy where an LLM reflects on its past actions to learn and improve. After an initial attempt to solve a task, an evaluator LLM provides feedback. The agent then "reflects" on this feedback to identify its mistakes and generate a plan to improve, before making a second, more informed attempt.',
+    pseudoCode: `
+# 1. Define the task
+task = "Write a Python function to check if a number is prime. Include a docstring."
+
+# 2. First attempt (ACT)
+first_attempt = agent.run(task)
+# -> might produce code without a docstring
+
+# 3. Evaluate the attempt
+evaluator_prompt = f"Did this code meet all requirements? Code: {first_attempt}"
+feedback = evaluator_llm.generate(evaluator_prompt)
+# -> "The code is functionally correct but is missing the required docstring."
+
+# 4. Reflect on the feedback
+reflexion_prompt = f"You failed because: '{feedback}'. How can you improve?"
+self_reflection = agent.run(reflexion_prompt)
+# -> "I need to add a clear docstring explaining what the function does."
+
+# 5. Retry the task with the reflection in mind
+retry_prompt = f"Original task: {task}. Your reflection: {self_reflection}. Try again."
+second_attempt = agent.run(retry_prompt)
+
+print(second_attempt)
+    `,
+    demoComponent: ReflexionDemo,
+  },
+  {
+    id: StrategyId.PLANNER_EXECUTOR,
+    name: 'Planner-Executor',
+    description: 'A strategy where a "Planner" LLM first breaks down a complex goal into a series of smaller, manageable steps. An "Executor" agent then carries out each step in sequence, potentially using tools for specific tasks. This is highly effective for complex queries that require multiple actions or information gathering.',
+    pseudoCode: `
+# 1. Define a complex goal
+goal = "Find the current CEO of SpaceX and write a short paragraph about their career."
+
+# 2. PLANNER creates a step-by-step plan
+planner_prompt = f"Create a plan to achieve this goal: {goal}"
+plan = planner_llm.generate(planner_prompt)
+# -> 1. Search for "CEO of SpaceX". 2. Research the career of the person found. 3. Write a summary.
+
+# 3. EXECUTOR carries out the plan
+# Step 1:
+observation_1 = executor.run_tool("Search", "CEO of SpaceX") # -> "Elon Musk"
+# Step 2:
+observation_2 = executor.run_tool("Search", "Elon Musk career") # -> "Co-founder of Zip2, PayPal, SpaceX, Tesla..."
+# Step 3:
+final_prompt = f"Write a paragraph about Elon Musk's career using this info: {observation_2}"
+final_answer = executor.llm.generate(final_prompt)
+
+print(final_answer)
+    `,
+    demoComponent: PlannerExecutorDemo,
   },
 ];

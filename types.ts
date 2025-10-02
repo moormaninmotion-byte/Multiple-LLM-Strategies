@@ -5,6 +5,9 @@ export enum StrategyId {
   SEQUENTIAL = 'sequential',
   ROUTER = 'router',
   AGENT_EXECUTOR = 'agent_executor',
+  MAP_REDUCE = 'map_reduce',
+  REFLEXION = 'reflexion',
+  PLANNER_EXECUTOR = 'planner_executor',
 }
 
 export interface Strategy {
