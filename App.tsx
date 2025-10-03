@@ -53,7 +53,7 @@ const App: React.FC = () => {
           {/* Hero Section */}
           <section className="text-center py-6 border-b border-gray-800 mb-10">
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">LLM Chaining Explorer</h1>
-              <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-400">
+              <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-400 font-body">
                   A curation of practical information on methods for LLM chaining.
               </p>
           </section>
@@ -61,14 +61,14 @@ const App: React.FC = () => {
           {/* Header */}
           <header>
             <h2 className="text-3xl font-bold text-white tracking-tight">{activeStrategy.name}</h2>
-            <p className="mt-2 text-base text-gray-400">{activeStrategy.description}</p>
+            <p className="mt-2 text-base text-gray-400 font-body">{activeStrategy.description}</p>
           </header>
 
           {/* Use Cases Section */}
           <section>
             <h3 className="text-xl font-semibold text-white mb-3">Production Use Cases</h3>
             <div className="bg-gray-800/20 border border-gray-700 p-5 rounded-lg">
-                <ul className="space-y-2 list-disc list-inside text-gray-300 text-sm">
+                <ul className="space-y-2 list-disc list-inside text-gray-300 text-sm font-body">
                     {activeStrategy.useCases.map((useCase, index) => (
                         <li key={index}>{useCase}</li>
                     ))}
@@ -84,10 +84,10 @@ const App: React.FC = () => {
                 {activeStrategy.tools.map((tool, index) => (
                   <div key={index} className="bg-gray-800/20 border border-gray-700 p-5 rounded-lg">
                     <h4 className="font-semibold text-base text-white mb-1">{tool.name}</h4>
-                    <p className="text-sm text-gray-400 mb-2">{tool.description}</p>
+                    <p className="text-sm text-gray-400 mb-2 font-body">{tool.description}</p>
                     <div className="bg-gray-900/50 p-3 rounded-md">
                         <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Usage Example</p>
-                        <p className="text-sm text-gray-300">{tool.usage}</p>
+                        <p className="text-sm text-gray-300 font-body">{tool.usage}</p>
                     </div>
                   </div>
                 ))}
@@ -102,17 +102,17 @@ const App: React.FC = () => {
               <div className="bg-gray-800/20 border border-gray-700 p-5 rounded-lg space-y-4">
                   <div>
                       <h4 className="font-semibold text-base text-white mb-1">Overview</h4>
-                      <p className="text-sm text-gray-300">{activeStrategy.implementation.overview}</p>
+                      <p className="text-sm text-gray-300 font-body">{activeStrategy.implementation.overview}</p>
                   </div>
                   <div>
                       <h4 className="font-semibold text-base text-white mb-1">Key Dependencies</h4>
-                      <ul className="list-disc list-inside text-sm text-gray-300 space-y-1 pl-2">
+                      <ul className="list-disc list-inside text-sm text-gray-300 space-y-1 pl-2 font-body">
                           {activeStrategy.implementation.dependencies.map((dep, i) => <li key={i}>{dep}</li>)}
                       </ul>
                   </div>
                   <div>
                       <h4 className="font-semibold text-base text-white mb-1">Requirements</h4>
-                      <ul className="list-disc list-inside text-sm text-gray-300 space-y-1 pl-2">
+                      <ul className="list-disc list-inside text-sm text-gray-300 space-y-1 pl-2 font-body">
                           {activeStrategy.implementation.requirements.map((req, i) => <li key={i}>{req}</li>)}
                       </ul>
                   </div>

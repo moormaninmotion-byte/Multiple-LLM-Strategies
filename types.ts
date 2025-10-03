@@ -11,6 +11,8 @@ export enum StrategyId {
   TREE_OF_THOUGHTS = 'tree_of_thoughts',
 }
 
+export type Priority = 'low' | 'medium' | 'high';
+
 export interface ToolDescription {
   name: string;
   description: string;
@@ -40,4 +42,5 @@ export interface ChainStep {
   output: string;
   isLoading: boolean;
   isComplete: boolean;
+  priority?: Priority;
 }

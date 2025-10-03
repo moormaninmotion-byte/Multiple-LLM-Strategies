@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import type { ChainStep } from '../../types';
+import type { ChainStep, Priority } from '../../types';
 import { streamGeminiResponse } from '../../services/geminiService';
 import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
@@ -15,6 +15,14 @@ const FAILED_ATTEMPT_CODE = `def is_prime(n):
 
 const EVALUATION_FEEDBACK = `The code is functionally correct for checking primality, but it is missing the required docstring that explains what the function does, its parameters, and what it returns.`;
 
+const getPriorityStyles = (priority: Priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-sky-500/20 text-sky-400 border-sky-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+};
 
 const ReflexionDemo: React.FC = () => {
     const [task, setTask] = useState<string>('Write a Python function to check if a number is prime. The function must include a docstring explaining its purpose, arguments, and return value.');
@@ -27,10 +35,10 @@ const ReflexionDemo: React.FC = () => {
         setIsLoading(true);
         setRunId(Date.now().toString());
         const initialSteps: ChainStep[] = [
-            { title: 'Attempt 1: Act', prompt: task, output: '', isLoading: true, isComplete: false },
-            { title: 'Step 2: Evaluate', prompt: '', output: '', isLoading: false, isComplete: false },
-            { title: 'Step 3: Reflect', prompt: '', output: '', isLoading: false, isComplete: false },
-            { title: 'Attempt 2: Retry with Reflection', prompt: '', output: '', isLoading: false, isComplete: false },
+            { title: 'Attempt 1: Act', prompt: task, output: '', isLoading: true, isComplete: false, priority: 'high' },
+            { title: 'Step 2: Evaluate', prompt: '', output: '', isLoading: false, isComplete: false, priority: 'high' },
+            { title: 'Step 3: Reflect', prompt: '', output: '', isLoading: false, isComplete: false, priority: 'medium' },
+            { title: 'Attempt 2: Retry with Reflection', prompt: '', output: '', isLoading: false, isComplete: false, priority: 'high' },
         ];
         setSteps(initialSteps);
 
@@ -137,6 +145,11 @@ const ReflexionDemo: React.FC = () => {
                                 </div>
                                 {step.title}
                             </h4>
+                            {step.priority && (
+                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full border capitalize ${getPriorityStyles(step.priority)}`}>
+                                    {step.priority}
+                                </span>
+                            )}
                         </div>
                         
                         {(step.prompt || step.output) && (

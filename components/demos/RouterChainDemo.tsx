@@ -1,11 +1,20 @@
 import React, { useState, useCallback } from 'react';
-import type { ChainStep } from '../../types';
+import type { ChainStep, Priority } from '../../types';
 import { streamGeminiResponse } from '../../services/geminiService';
 import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
 type Topic = 'history' | 'math' | 'science' | 'unknown';
+
+const getPriorityStyles = (priority: Priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-sky-500/20 text-sky-400 border-sky-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+};
 
 const RouterChainDemo: React.FC = () => {
   const [query, setQuery] = useState<string>('Why is the sky blue?');
@@ -17,8 +26,8 @@ const RouterChainDemo: React.FC = () => {
     setIsLoading(true);
     setRunId(Date.now().toString());
     const initialSteps: ChainStep[] = [
-      { title: 'Step 1: Route Query', prompt: `Categorize the following query. Respond with only one word: 'history', 'math', or 'science'. Query: ${query}`, output: '', isLoading: true, isComplete: false },
-      { title: 'Step 2: Expert Answer', prompt: '', output: '', isLoading: false, isComplete: false },
+      { title: 'Step 1: Route Query', prompt: `Categorize the following query. Respond with only one word: 'history', 'math', or 'science'. Query: ${query}`, output: '', isLoading: true, isComplete: false, priority: 'high' },
+      { title: 'Step 2: Expert Answer', prompt: '', output: '', isLoading: false, isComplete: false, priority: 'medium' },
     ];
     setSteps(initialSteps);
 
@@ -122,6 +131,11 @@ const RouterChainDemo: React.FC = () => {
                   </div>
                   {step.title}
               </h4>
+               {step.priority && (
+                <span className={`px-2 py-0.5 text-xs font-medium rounded-full border capitalize ${getPriorityStyles(step.priority)}`}>
+                    {step.priority}
+                </span>
+              )}
             </div>
             
             {(step.prompt || step.output) && (
