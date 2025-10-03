@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { streamGeminiResponse } from '../../services/geminiService';
 import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
+import Feedback from '../Feedback';
 
 const LOREM_IPSUM = `The Industrial Revolution, a period from the 18th to the 19th century, marked a profound transition to new manufacturing processes in Europe and the United States. This era saw the shift from hand production methods to machines, new chemical manufacturing, and iron production processes. The development of machine tools and the rise of the factory system were central to this change.
 
@@ -40,9 +41,11 @@ const MapReduceDemo: React.FC = () => {
     const [mapSteps, setMapSteps] = useState<MapStep[]>([]);
     const [reduceStep, setReduceStep] = useState<ReduceStep | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [runId, setRunId] = useState<string | null>(null);
 
     const runChain = useCallback(async () => {
         setIsLoading(true);
+        setRunId(Date.now().toString());
 
         // 1. Split
         const chunks = document.split('---').map(c => c.trim()).filter(Boolean);
@@ -100,8 +103,10 @@ const MapReduceDemo: React.FC = () => {
 
     }, [document, query]);
 
+    const isChainComplete = reduceStep?.isComplete;
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             <div className="space-y-4">
                 <div>
                     <label htmlFor="document-input" className="block text-sm font-medium text-gray-400 mb-2">
@@ -111,8 +116,8 @@ const MapReduceDemo: React.FC = () => {
                         id="document-input"
                         value={document}
                         onChange={(e) => setDocument(e.target.value)}
-                        rows={8}
-                        className="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                        rows={6}
+                        className="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm"
                         placeholder="Enter a large document here..."
                         disabled={isLoading}
                     />
@@ -127,14 +132,14 @@ const MapReduceDemo: React.FC = () => {
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm"
                             placeholder="e.g., Summarize this document"
                             disabled={isLoading}
                         />
                         <button
                             onClick={runChain}
                             disabled={isLoading || !document || !query}
-                            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                         >
                             {isLoading ? <><Spinner /> Running...</> : 'Run Chain'}
                         </button>
@@ -143,20 +148,20 @@ const MapReduceDemo: React.FC = () => {
             </div>
 
             {mapSteps.length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-xl font-semibold">Map Step ({mapSteps.length} Chunks)</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Map Step ({mapSteps.length} Chunks)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {mapSteps.map((step, index) => (
                             <div key={index} className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out ${step.isComplete ? 'border-green-500/30' : 'border-gray-700'}`}>
-                                <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-                                    <h4 className="font-semibold text-base flex items-center gap-3">
-                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all duration-300 ${step.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${step.isLoading ? 'animate-pulse' : ''}`}>
-                                            {step.isLoading ? <Spinner className="w-4 h-4" /> : step.isComplete ? <CheckIcon className="w-4 h-4" /> : <span className="font-mono font-bold">{index + 1}</span>}
+                                <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+                                    <h4 className="font-semibold text-sm flex items-center gap-2">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all duration-300 ${step.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${step.isLoading ? 'animate-pulse' : ''}`}>
+                                            {step.isLoading ? <Spinner className="w-3 h-3" /> : step.isComplete ? <CheckIcon className="w-4 h-4" /> : <span className="font-mono font-bold text-xs">{index + 1}</span>}
                                         </div>
                                         Chunk {index + 1} Summary
                                     </h4>
                                 </div>
-                                <div className="p-4 space-y-4 max-h-60 overflow-y-auto">
+                                <div className="p-3 space-y-3 max-h-60 overflow-y-auto">
                                     <div>
                                         <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Input Chunk</p>
                                         <p className="text-xs text-gray-400 font-mono bg-gray-900/50 p-2 rounded-md break-all">{step.chunk.substring(0, 100)}...</p>
@@ -176,25 +181,25 @@ const MapReduceDemo: React.FC = () => {
             )}
             
             {reduceStep && (
-                <div className="space-y-4">
-                    <h3 className="text-xl font-semibold">Reduce Step</h3>
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Reduce Step</h3>
                      <div className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out ${reduceStep.isComplete ? 'border-green-500/30' : 'border-gray-700'}`}>
-                        <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-                            <h4 className="font-semibold text-lg flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${reduceStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${reduceStep.isLoading ? 'animate-pulse' : ''}`}>
+                        <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+                            <h4 className="font-semibold text-base flex items-center gap-3">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${reduceStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${reduceStep.isLoading ? 'animate-pulse' : ''}`}>
                                     {reduceStep.isLoading ? <Spinner className="w-4 h-4" /> : <CheckIcon className="w-5 h-5" />}
                                 </div>
                                 Final Summary
                             </h4>
                         </div>
-                        <div className="p-4 space-y-4">
+                        <div className="p-3 space-y-3">
                             <div>
                                 <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Input (Combined Summaries)</p>
-                                <p className="text-sm text-gray-400 font-mono bg-gray-900/50 p-3 rounded-md max-h-40 overflow-y-auto whitespace-pre-wrap">{reduceStep.combinedSummary}</p>
+                                <p className="text-xs text-gray-400 font-mono bg-gray-900/50 p-2.5 rounded-md max-h-40 overflow-y-auto whitespace-pre-wrap">{reduceStep.combinedSummary}</p>
                             </div>
                             <div>
                                 <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Final Output</p>
-                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-3 rounded-md min-h-[2.5em]">
+                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md min-h-[2.5em] text-sm">
                                     {reduceStep.finalSummary}
                                     {reduceStep.isLoading && <span className="inline-block w-0.5 h-4 bg-gray-300 animate-pulse ml-1 align-[-2px]" />}
                                 </div>
@@ -202,6 +207,10 @@ const MapReduceDemo: React.FC = () => {
                         </div>
                      </div>
                 </div>
+            )}
+            
+            {isChainComplete && runId && (
+              <Feedback runId={`map-reduce-${runId}`} />
             )}
         </div>
     );

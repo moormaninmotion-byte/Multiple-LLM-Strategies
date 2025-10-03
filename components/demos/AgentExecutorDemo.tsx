@@ -3,6 +3,7 @@ import type { ChainStep } from '../../types';
 import { streamGeminiResponse } from '../../services/geminiService';
 import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
+import Feedback from '../Feedback';
 
 // Custom icons for agent steps
 const ThoughtIcon: React.FC = () => (
@@ -34,6 +35,7 @@ const AgentExecutorDemo: React.FC = () => {
     const [query, setQuery] = useState("What is (5 * 12) + 2^3, and what is the weather like in London?");
     const [steps, setSteps] = useState<AgentStep[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [runId, setRunId] = useState<string | null>(null);
 
     // --- Mock Tools ---
     const mockCalculator = async (expression: string): Promise<string> => {
@@ -71,6 +73,7 @@ const AgentExecutorDemo: React.FC = () => {
 
     const runChain = useCallback(async () => {
         setIsLoading(true);
+        setRunId(Date.now().toString());
         const currentSteps: AgentStep[] = [];
         setSteps(currentSteps);
 
@@ -155,9 +158,10 @@ const AgentExecutorDemo: React.FC = () => {
         setIsLoading(false);
     }, [query]);
 
+    const isChainComplete = steps.length > 0 && steps[steps.length - 1].isComplete && steps[steps.length - 1].type === 'final-answer';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
         <label htmlFor="query-input" className="block text-sm font-medium text-gray-400">
           Enter a complex query:
@@ -168,34 +172,34 @@ const AgentExecutorDemo: React.FC = () => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-            placeholder="e.g., What is 2+2?"
+            className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm"
+            placeholder="Try math, weather, etc."
             disabled={isLoading}
           />
           <button
             onClick={runChain}
             disabled={isLoading || !query}
-            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
           >
             {isLoading ? <><Spinner /> Running...</> : 'Run Chain'}
           </button>
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3">
         {steps.map((step, index) => (
           <div key={index} className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out ${step.isComplete ? 'border-green-500/30' : 'border-gray-700'}`}>
-            <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-              <h4 className="font-semibold text-lg flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${step.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${step.isLoading ? 'animate-pulse' : ''}`}>
-                      {step.isLoading ? <Spinner className="w-4 h-4" /> : step.isComplete ? <CheckIcon className="w-5 h-5" /> : getStepIcon(step.type)}
+            <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+              <h4 className="font-semibold text-base flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${step.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${step.isLoading ? 'animate-pulse' : ''}`}>
+                      {step.isLoading ? <Spinner className="w-4 h-4" /> : step.isComplete ? getStepIcon(step.type) : getStepIcon(step.type)}
                   </div>
                   {step.title}
               </h4>
             </div>
             
-            <div className="p-4 space-y-4">
-                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-3 rounded-md min-h-[2.5em]">
+            <div className="p-3">
+                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md min-h-[2.5em] text-sm">
                     {step.content}
                     {step.isLoading && <span className="inline-block w-0.5 h-4 bg-gray-300 animate-pulse ml-1 align-[-2px]" />}
                 </div>
@@ -203,6 +207,10 @@ const AgentExecutorDemo: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {isChainComplete && runId && (
+        <Feedback runId={`agent-executor-${runId}`} />
+      )}
     </div>
   );
 };

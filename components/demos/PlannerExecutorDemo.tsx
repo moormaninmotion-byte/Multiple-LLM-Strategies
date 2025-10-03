@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { streamGeminiResponse } from '../../services/geminiService';
 import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
+import Feedback from '../Feedback';
 
 // Re-using icons from AgentExecutorDemo
 const ActionIcon: React.FC = () => (
@@ -44,6 +45,7 @@ const PlannerExecutorDemo: React.FC = () => {
     const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
     const [finalAnswerStep, setFinalAnswerStep] = useState<FinalAnswerStep | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [runId, setRunId] = useState<string | null>(null);
 
     // Mock Search Tool
     const mockSearch = async (searchTerm: string): Promise<string> => {
@@ -57,6 +59,7 @@ const PlannerExecutorDemo: React.FC = () => {
 
     const runChain = useCallback(async () => {
         setIsLoading(true);
+        setRunId(Date.now().toString());
         setExecutionSteps([]);
         setFinalAnswerStep(null);
         
@@ -103,8 +106,10 @@ const PlannerExecutorDemo: React.FC = () => {
         setIsLoading(false);
     }, [goal]);
 
+    const isChainComplete = finalAnswerStep?.isComplete;
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             <div className="space-y-2">
                 <label htmlFor="goal-input" className="block text-sm font-medium text-gray-400">
                     Enter a complex goal:
@@ -115,35 +120,35 @@ const PlannerExecutorDemo: React.FC = () => {
                         type="text"
                         value={goal}
                         onChange={(e) => setGoal(e.target.value)}
-                        className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                        className="flex-grow bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-sm"
                         placeholder="Enter a multi-step goal..."
                         disabled={isLoading}
                     />
                     <button
                         onClick={runChain}
                         disabled={isLoading || !goal}
-                        className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                        className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                     >
                         {isLoading ? <><Spinner /> Running...</> : 'Run Chain'}
                     </button>
                 </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {planStep && (
                      <div className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out ${planStep.isComplete ? 'border-green-500/30' : 'border-gray-700'}`}>
-                        <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-                            <h4 className="font-semibold text-lg flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${planStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${planStep.isLoading ? 'animate-pulse' : ''}`}>
+                        <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+                            <h4 className="font-semibold text-base flex items-center gap-3">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${planStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${planStep.isLoading ? 'animate-pulse' : ''}`}>
                                     {planStep.isLoading ? <Spinner className="w-4 h-4" /> : <CheckIcon className="w-5 h-5" />}
                                 </div>
                                 {planStep.title}
                             </h4>
                         </div>
-                        <div className="p-4 space-y-4">
+                        <div className="p-3">
                              <div>
                                 <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Output: Generated Plan</p>
-                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-3 rounded-md min-h-[2.5em]">
+                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md min-h-[2.5em] text-sm">
                                     {planStep.plan}
                                     {planStep.isLoading && <span className="inline-block w-0.5 h-4 bg-gray-300 animate-pulse ml-1 align-[-2px]" />}
                                 </div>
@@ -154,22 +159,22 @@ const PlannerExecutorDemo: React.FC = () => {
 
                 {executionSteps.length > 0 && (
                      <div className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out border-green-500/30`}>
-                        <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-                            <h4 className="font-semibold text-lg flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm bg-green-500/20 text-green-400">
+                        <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+                            <h4 className="font-semibold text-base flex items-center gap-3">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm bg-green-500/20 text-green-400">
                                     <CheckIcon className="w-5 h-5" />
                                 </div>
                                 Step 2: Execute Plan
                             </h4>
                         </div>
-                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             {executionSteps.map((step, index) => (
                                 <div key={index}>
                                     <p className="text-sm font-semibold text-gray-400 mb-1 flex items-center gap-2">
                                         {step.type === 'action' ? <ActionIcon /> : <ObservationIcon />}
                                         {step.title}
                                     </p>
-                                    <div className="text-gray-300 text-sm whitespace-pre-wrap bg-gray-900/20 p-3 rounded-md">
+                                    <div className="text-gray-300 text-sm whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md">
                                         {step.content}
                                     </div>
                                 </div>
@@ -180,18 +185,18 @@ const PlannerExecutorDemo: React.FC = () => {
 
                 {finalAnswerStep && (
                      <div className={`bg-gray-800/50 border rounded-lg transition-all duration-300 ease-in-out ${finalAnswerStep.isComplete ? 'border-green-500/30' : 'border-gray-700'}`}>
-                        <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
-                            <h4 className="font-semibold text-lg flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${finalAnswerStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${finalAnswerStep.isLoading ? 'animate-pulse' : ''}`}>
+                        <div className="p-3 flex items-center justify-between border-b border-gray-700/50">
+                            <h4 className="font-semibold text-base flex items-center gap-3">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all duration-300 ${finalAnswerStep.isComplete ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'} ${finalAnswerStep.isLoading ? 'animate-pulse' : ''}`}>
                                     {finalAnswerStep.isLoading ? <Spinner className="w-4 h-4" /> : <AnswerIcon />}
                                 </div>
                                 {finalAnswerStep.title}
                             </h4>
                         </div>
-                        <div className="p-4 space-y-4">
+                        <div className="p-3">
                              <div>
                                 <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Final Answer</p>
-                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-3 rounded-md min-h-[2.5em]">
+                                <div className="text-gray-300 whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md min-h-[2.5em] text-sm">
                                     {finalAnswerStep.answer}
                                     {finalAnswerStep.isLoading && <span className="inline-block w-0.5 h-4 bg-gray-300 animate-pulse ml-1 align-[-2px]" />}
                                 </div>
@@ -200,6 +205,9 @@ const PlannerExecutorDemo: React.FC = () => {
                     </div>
                 )}
             </div>
+            {isChainComplete && runId && (
+              <Feedback runId={`planner-executor-${runId}`} />
+            )}
         </div>
     );
 };
