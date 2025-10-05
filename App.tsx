@@ -5,9 +5,14 @@ import CodeBlock from './components/CodeBlock';
 import StrategyDiagram from './components/StrategyDiagram';
 import MenuIcon from './components/icons/MenuIcon';
 
-const App: React.FC = () => {
+interface AppProps {
+  apiKey: string | null;
+}
+
+const App: React.FC<AppProps> = ({ apiKey }) => {
   const [activeStrategyId, setActiveStrategyId] = useState<StrategyId>(STRATEGIES[0].id);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isApiKeySet = !!apiKey;
 
   const activeStrategy = useMemo(() => {
     return STRATEGIES.find(s => s.id === activeStrategyId)!;
@@ -18,18 +23,6 @@ const App: React.FC = () => {
   }, [activeStrategyId]);
 
   const DemoComponent = activeStrategy.demoComponent;
-
-  if (!process.env.API_KEY) {
-    return (
-        <div className="flex items-center justify-center h-screen bg-gray-900 text-white p-4">
-            <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center">
-                <h2 className="font-bold text-lg mb-2">Configuration Error</h2>
-                <p>The `API_KEY` environment variable is not set.</p>
-                <p className="mt-1 text-sm">Please ensure your API key is correctly configured to use this application.</p>
-            </div>
-        </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex bg-gray-900 text-gray-100">
@@ -72,6 +65,13 @@ const App: React.FC = () => {
                 <MenuIcon className="w-6 h-6" />
              </button>
           </div>
+
+          {/* View Only Banner */}
+          {!isApiKeySet && (
+            <div className="bg-yellow-900/50 border border-yellow-700 text-yellow-300 px-4 py-3 rounded-lg text-center text-sm">
+              <p><strong>Read-Only Mode:</strong> An API key is required to run the interactive demos. You can add one by refreshing the page.</p>
+            </div>
+          )}
 
           {/* Hero Section */}
           <section className="text-center py-6 border-b border-gray-800 md:mb-10">
@@ -161,7 +161,7 @@ const App: React.FC = () => {
           <section>
             <h3 className="text-xl font-semibold text-white mb-3">Interactive Demo</h3>
             <div className="bg-gray-800/20 border border-gray-700 p-5 rounded-lg">
-              <DemoComponent />
+              <DemoComponent apiKey={apiKey} />
             </div>
           </section>
 

@@ -4,6 +4,10 @@ import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 const NUM_THOUGHTS = 3;
 
 interface Thought {
@@ -22,13 +26,14 @@ interface FinalAnswer {
     isComplete: boolean;
 }
 
-const TreeOfThoughtsDemo: React.FC = () => {
+const TreeOfThoughtsDemo: React.FC<DemoProps> = ({ apiKey }) => {
     const [problem, setProblem] = useState('Write a short, optimistic sci-fi story about first contact with an alien species.');
     const [thoughts, setThoughts] = useState<Thought[]>([]);
     const [finalAnswer, setFinalAnswer] = useState<FinalAnswer | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [activeStep, setActiveStep] = useState<'generate' | 'evaluate' | 'synthesize' | null>(null);
     const [runId, setRunId] = useState<string | null>(null);
+    const isApiKeySet = !!apiKey;
 
     const parseEvaluation = (text: string): { score: number; justification: string } => {
         try {
@@ -44,6 +49,8 @@ const TreeOfThoughtsDemo: React.FC = () => {
     }
     
     const runChain = useCallback(async () => {
+        if (!apiKey) return;
+
         setIsLoading(true);
         setRunId(Date.now().toString());
         setFinalAnswer(null);
@@ -66,7 +73,7 @@ const TreeOfThoughtsDemo: React.FC = () => {
             const prompt = `You are a creative writer. Generate one unique and creative opening paragraph for a story based on this premise: "${problem}".`;
             let fullText = '';
             return (async () => {
-                for await (const chunk of streamGeminiResponse(prompt)) {
+                for await (const chunk of streamGeminiResponse(apiKey, prompt)) {
                     fullText += chunk;
                     setThoughts(prev => prev.map(t => t.id === thought.id ? { ...t, text: fullText } : t));
                 }
@@ -88,7 +95,7 @@ const TreeOfThoughtsDemo: React.FC = () => {
             const prompt = `Evaluate the following story opening on a scale of 1-10 for its creativity, potential, and engagement. Respond ONLY with a single JSON object with two keys: "score" (number) and "justification" (string).\n\nOpening: "${thought.text}"`;
             let fullText = '';
             return (async () => {
-                 for await (const chunk of streamGeminiResponse(prompt)) {
+                 for await (const chunk of streamGeminiResponse(apiKey, prompt)) {
                     fullText += chunk;
                  }
                  const evaluation = parseEvaluation(fullText);
@@ -118,7 +125,7 @@ const TreeOfThoughtsDemo: React.FC = () => {
         setFinalAnswer({ text: '', isLoading: true, isComplete: false });
         const synthesisPrompt = `Continue and conclude the story based on the following selected opening paragraph:\n\n"${bestThought.text}"`;
         let fullAnswer = '';
-        for await (const chunk of streamGeminiResponse(synthesisPrompt)) {
+        for await (const chunk of streamGeminiResponse(apiKey, synthesisPrompt)) {
             fullAnswer += chunk;
             setFinalAnswer(prev => prev ? { ...prev, text: fullAnswer } : null);
         }
@@ -126,7 +133,7 @@ const TreeOfThoughtsDemo: React.FC = () => {
         setFinalAnswer(prev => prev ? { ...prev, isLoading: false, isComplete: true } : null);
         setIsLoading(false);
         setActiveStep(null);
-    }, [problem]);
+    }, [problem, apiKey]);
 
     const isChainComplete = finalAnswer?.isComplete;
 
@@ -154,12 +161,18 @@ const TreeOfThoughtsDemo: React.FC = () => {
                     />
                     <button
                         onClick={runChain}
-                        disabled={isLoading || !problem}
+                        disabled={isLoading || !problem || !isApiKeySet}
+                        title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
                         className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                     >
                         {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
                     </button>
                 </div>
+                 {!isApiKeySet && (
+                    <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md mt-2">
+                        Please provide an API key to run this demo.
+                    </div>
+                )}
             </div>
             
             <div className="space-y-3">

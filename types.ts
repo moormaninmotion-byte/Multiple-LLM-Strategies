@@ -32,7 +32,7 @@ export interface Strategy {
   description: string;
   useCases: string[];
   pseudoCode: string;
-  demoComponent: React.ComponentType;
+  demoComponent: React.ComponentType<{ apiKey: string | null }>;
   tools?: ToolDescription[];
   implementation?: ImplementationDetails;
 }

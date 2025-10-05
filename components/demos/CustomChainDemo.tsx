@@ -6,13 +6,17 @@ import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 import TrashIcon from '../icons/TrashIcon';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 interface CustomStep {
   id: number;
   title: string;
   promptTemplate: string;
 }
 
-const CustomChainDemo: React.FC = () => {
+const CustomChainDemo: React.FC<DemoProps> = ({ apiKey }) => {
   const [customSteps, setCustomSteps] = useState<CustomStep[]>([
     { id: 1, title: 'Generate a creative story title', promptTemplate: 'Generate a creative title for a sci-fi story about a lost robot.' },
     { id: 2, title: 'Write a synopsis', promptTemplate: 'Write a short story synopsis based on the title: "{{output_1}}"' },
@@ -21,6 +25,7 @@ const CustomChainDemo: React.FC = () => {
   const [executionSteps, setExecutionSteps] = useState<ChainStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
+  const isApiKeySet = !!apiKey;
 
   const addStep = () => {
     const newStep: CustomStep = {
@@ -42,6 +47,8 @@ const CustomChainDemo: React.FC = () => {
   };
   
   const runChain = useCallback(async () => {
+    if (!apiKey) return;
+
     setIsLoading(true);
     setRunId(Date.now().toString());
     
@@ -78,7 +85,7 @@ const CustomChainDemo: React.FC = () => {
 
       // Stream response
       let currentOutput = '';
-      for await (const chunk of streamGeminiResponse(resolvedPrompt)) {
+      for await (const chunk of streamGeminiResponse(apiKey, resolvedPrompt)) {
         currentOutput += chunk;
         setExecutionSteps(prev => {
           const newSteps = [...prev];
@@ -97,7 +104,7 @@ const CustomChainDemo: React.FC = () => {
       });
     }
     setIsLoading(false);
-  }, [customSteps]);
+  }, [customSteps, apiKey]);
 
   const isChainComplete = executionSteps.length > 0 && executionSteps[executionSteps.length - 1].isComplete;
 
@@ -151,12 +158,18 @@ const CustomChainDemo: React.FC = () => {
             </button>
             <button
               onClick={runChain}
-              disabled={isLoading || customSteps.length === 0}
+              disabled={isLoading || customSteps.length === 0 || !isApiKeySet}
+              title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
               className="px-6 py-2 w-full sm:w-auto bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
             >
               {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
             </button>
           </div>
+           {!isApiKeySet && (
+            <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md">
+                Please provide an API key to run this demo.
+            </div>
+            )}
         </div>
       </div>
 

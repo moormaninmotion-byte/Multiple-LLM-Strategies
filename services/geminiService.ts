@@ -1,13 +1,12 @@
-
 import { GoogleGenAI } from "@google/genai";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
-}
+export async function* streamGeminiResponse(
+    apiKey: string,
+    prompt: string, 
+    systemInstruction?: string
+) {
+    const ai = new GoogleGenAI({ apiKey });
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-export async function* streamGeminiResponse(prompt: string, systemInstruction?: string) {
     try {
         const response = await ai.models.generateContentStream({
             model: "gemini-2.5-flash",
@@ -22,6 +21,10 @@ export async function* streamGeminiResponse(prompt: string, systemInstruction?: 
         }
     } catch (error) {
         console.error("Error streaming from Gemini:", error);
-        yield "An error occurred while generating the response. Please check the console for details.";
+        if (error instanceof Error && error.message.includes('API key not valid')) {
+             yield "Error: The provided API key is not valid. Please check your key and try again.";
+        } else {
+            yield "An error occurred while generating the response. Please check the console for details.";
+        }
     }
 }

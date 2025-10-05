@@ -4,6 +4,10 @@ import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 const LOREM_IPSUM = `The Industrial Revolution, a period from the 18th to the 19th century, marked a profound transition to new manufacturing processes in Europe and the United States. This era saw the shift from hand production methods to machines, new chemical manufacturing, and iron production processes. The development of machine tools and the rise of the factory system were central to this change.
 
 Key innovations included the steam engine, which powered factories, locomotives, and ships. The textile industry was transformed by inventions like the spinning jenny and the power loom, dramatically increasing production efficiency. These changes not only altered industrial processes but also brought about significant social and economic shifts, including urbanization and the rise of a new working class.
@@ -35,15 +39,18 @@ interface ReduceStep {
     isComplete: boolean;
 }
 
-const MapReduceDemo: React.FC = () => {
+const MapReduceDemo: React.FC<DemoProps> = ({ apiKey }) => {
     const [document, setDocument] = useState<string>(LOREM_IPSUM);
     const [query, setQuery] = useState<string>('Summarize the key technological shifts described in this document.');
     const [mapSteps, setMapSteps] = useState<MapStep[]>([]);
     const [reduceStep, setReduceStep] = useState<ReduceStep | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [runId, setRunId] = useState<string | null>(null);
+    const isApiKeySet = !!apiKey;
 
     const runChain = useCallback(async () => {
+        if (!apiKey) return;
+
         setIsLoading(true);
         setRunId(Date.now().toString());
 
@@ -62,7 +69,7 @@ const MapReduceDemo: React.FC = () => {
         const mapPromises = chunks.map(async (chunk, index) => {
             const prompt = `${query}\n\nHere is the relevant text chunk:\n"""\n${chunk}\n"""\n\nProvide a concise summary of this chunk.`;
             let summary = '';
-            for await (const text of streamGeminiResponse(prompt)) {
+            for await (const text of streamGeminiResponse(apiKey, prompt)) {
                 summary += text;
                 setMapSteps(prev => {
                     const newSteps = [...prev];
@@ -93,7 +100,7 @@ const MapReduceDemo: React.FC = () => {
 
         const reducePrompt = `The following are summaries from different parts of a larger document. Synthesize them into a single, cohesive final answer that addresses the original query.\n\nOriginal Query: ${query}\n\nSummaries:\n"""\n${combined}\n"""\n\nFinal Answer:`;
         let finalSummary = '';
-        for await (const text of streamGeminiResponse(reducePrompt)) {
+        for await (const text of streamGeminiResponse(apiKey, reducePrompt)) {
             finalSummary += text;
             setReduceStep(prev => prev ? { ...prev, finalSummary } : null);
         }
@@ -101,7 +108,7 @@ const MapReduceDemo: React.FC = () => {
         setReduceStep(prev => prev ? { ...prev, isLoading: false, isComplete: true } : null);
         setIsLoading(false);
 
-    }, [document, query]);
+    }, [document, query, apiKey]);
 
     const isChainComplete = reduceStep?.isComplete;
 
@@ -138,12 +145,18 @@ const MapReduceDemo: React.FC = () => {
                         />
                         <button
                             onClick={runChain}
-                            disabled={isLoading || !document || !query}
+                            disabled={isLoading || !document || !query || !isApiKeySet}
+                            title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
                             className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                         >
                             {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
                         </button>
                     </div>
+                     {!isApiKeySet && (
+                        <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md mt-2">
+                            Please provide an API key to run this demo.
+                        </div>
+                    )}
                 </div>
             </div>
 

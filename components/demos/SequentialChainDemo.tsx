@@ -5,6 +5,10 @@ import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 const getPriorityStyles = (priority: Priority) => {
     switch (priority) {
       case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
@@ -14,13 +18,16 @@ const getPriorityStyles = (priority: Priority) => {
     }
 };
 
-const SequentialChainDemo: React.FC = () => {
+const SequentialChainDemo: React.FC<DemoProps> = ({ apiKey }) => {
   const [product, setProduct] = useState<string>('Quantum Quark Cola');
   const [steps, setSteps] = useState<ChainStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
+  const isApiKeySet = !!apiKey;
 
   const runChain = useCallback(async () => {
+    if (!apiKey) return;
+
     setIsLoading(true);
     setRunId(Date.now().toString());
     const initialSteps: ChainStep[] = [
@@ -32,7 +39,7 @@ const SequentialChainDemo: React.FC = () => {
 
     // Step 1: Slogan
     let slogan = '';
-    for await (const chunk of streamGeminiResponse(initialSteps[0].prompt)) {
+    for await (const chunk of streamGeminiResponse(apiKey, initialSteps[0].prompt)) {
       slogan += chunk;
       setSteps(prev => {
         const newSteps = [...prev];
@@ -51,7 +58,7 @@ const SequentialChainDemo: React.FC = () => {
     // Step 2: Ad Copy
     let adCopy = '';
     const adCopyPrompt = `Write a short, punchy ad copy for ${product} using the slogan: "${slogan}"`;
-    for await (const chunk of streamGeminiResponse(adCopyPrompt)) {
+    for await (const chunk of streamGeminiResponse(apiKey, adCopyPrompt)) {
       adCopy += chunk;
       setSteps(prev => {
         const newSteps = [...prev];
@@ -70,7 +77,7 @@ const SequentialChainDemo: React.FC = () => {
     // Step 3: Translation
     let translation = '';
     const translationPrompt = `Translate the following ad copy to French: "${adCopy}"`;
-    for await (const chunk of streamGeminiResponse(translationPrompt)) {
+    for await (const chunk of streamGeminiResponse(apiKey, translationPrompt)) {
       translation += chunk;
       setSteps(prev => {
         const newSteps = [...prev];
@@ -85,7 +92,7 @@ const SequentialChainDemo: React.FC = () => {
     });
 
     setIsLoading(false);
-  }, [product]);
+  }, [product, apiKey]);
 
   const isChainComplete = steps.length > 0 && steps[steps.length - 1].isComplete;
 
@@ -107,12 +114,18 @@ const SequentialChainDemo: React.FC = () => {
           />
           <button
             onClick={runChain}
-            disabled={isLoading || !product}
+            disabled={isLoading || !product || !isApiKeySet}
+            title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
             className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
           >
             {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
           </button>
         </div>
+         {!isApiKeySet && (
+          <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md mt-2">
+              Please provide an API key to run this demo.
+          </div>
+        )}
       </div>
       
       <div className="space-y-3">

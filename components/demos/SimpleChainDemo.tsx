@@ -5,6 +5,10 @@ import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 const getPriorityStyles = (priority: Priority) => {
     switch (priority) {
       case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
@@ -14,13 +18,16 @@ const getPriorityStyles = (priority: Priority) => {
     }
 };
 
-const SimpleChainDemo: React.FC = () => {
+const SimpleChainDemo: React.FC<DemoProps> = ({ apiKey }) => {
   const [topic, setTopic] = useState<string>('a haunted spaceship');
   const [steps, setSteps] = useState<ChainStep[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
+  const isApiKeySet = !!apiKey;
 
   const runChain = useCallback(async () => {
+    if (!apiKey) return;
+
     setIsLoading(true);
     setRunId(Date.now().toString());
     const initialSteps: ChainStep[] = [
@@ -32,7 +39,7 @@ const SimpleChainDemo: React.FC = () => {
     // Step 1
     const titlePrompt = initialSteps[0].prompt;
     let generatedTitle = '';
-    for await (const chunk of streamGeminiResponse(titlePrompt)) {
+    for await (const chunk of streamGeminiResponse(apiKey, titlePrompt)) {
       generatedTitle += chunk;
       setSteps(prev => {
         const newSteps = [...prev];
@@ -52,7 +59,7 @@ const SimpleChainDemo: React.FC = () => {
     // Step 2
     const synopsisPrompt = `Write a short story synopsis based on the title: "${generatedTitle}"`;
     let generatedSynopsis = '';
-     for await (const chunk of streamGeminiResponse(synopsisPrompt)) {
+     for await (const chunk of streamGeminiResponse(apiKey, synopsisPrompt)) {
       generatedSynopsis += chunk;
       setSteps(prev => {
         const newSteps = [...prev];
@@ -68,7 +75,7 @@ const SimpleChainDemo: React.FC = () => {
     });
 
     setIsLoading(false);
-  }, [topic]);
+  }, [topic, apiKey]);
 
   const isChainComplete = steps.length > 0 && steps[steps.length - 1].isComplete;
 
@@ -90,12 +97,18 @@ const SimpleChainDemo: React.FC = () => {
           />
           <button
             onClick={runChain}
-            disabled={isLoading || !topic}
+            disabled={isLoading || !topic || !isApiKeySet}
+            title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
             className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
           >
             {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
           </button>
         </div>
+         {!isApiKeySet && (
+          <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md mt-2">
+              Please provide an API key to run this demo.
+          </div>
+        )}
       </div>
       
       <div className="space-y-3">

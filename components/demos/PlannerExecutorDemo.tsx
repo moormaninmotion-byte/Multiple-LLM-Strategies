@@ -4,6 +4,10 @@ import Spinner from '../Spinner';
 import CheckIcon from '../icons/CheckIcon';
 import Feedback from '../Feedback';
 
+interface DemoProps {
+  apiKey: string | null;
+}
+
 // Re-using icons from AgentExecutorDemo
 const ActionIcon: React.FC = () => (
     <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -39,13 +43,14 @@ interface FinalAnswerStep {
     isComplete: boolean;
 }
 
-const PlannerExecutorDemo: React.FC = () => {
+const PlannerExecutorDemo: React.FC<DemoProps> = ({ apiKey }) => {
     const [goal, setGoal] = useState('Who is the CEO of Microsoft, what was the company\'s revenue in 2023, and what is their most famous product?');
     const [planStep, setPlanStep] = useState<PlanStep | null>(null);
     const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
     const [finalAnswerStep, setFinalAnswerStep] = useState<FinalAnswerStep | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [runId, setRunId] = useState<string | null>(null);
+    const isApiKeySet = !!apiKey;
 
     // Mock Search Tool
     const mockSearch = async (searchTerm: string): Promise<string> => {
@@ -58,6 +63,8 @@ const PlannerExecutorDemo: React.FC = () => {
     };
 
     const runChain = useCallback(async () => {
+        if (!apiKey) return;
+
         setIsLoading(true);
         setRunId(Date.now().toString());
         setExecutionSteps([]);
@@ -69,7 +76,7 @@ const PlannerExecutorDemo: React.FC = () => {
         setPlanStep(initialPlanStep);
         
         let plan = '';
-        for await (const chunk of streamGeminiResponse(planPrompt)) {
+        for await (const chunk of streamGeminiResponse(apiKey, planPrompt)) {
             plan += chunk;
             setPlanStep(prev => prev ? { ...prev, plan } : null);
         }
@@ -97,14 +104,14 @@ const PlannerExecutorDemo: React.FC = () => {
         setFinalAnswerStep(initialFinalStep);
 
         let finalAnswer = '';
-        for await (const chunk of streamGeminiResponse(finalPrompt)) {
+        for await (const chunk of streamGeminiResponse(apiKey, finalPrompt)) {
             finalAnswer += chunk;
             setFinalAnswerStep(prev => prev ? { ...prev, answer: finalAnswer } : null);
         }
         setFinalAnswerStep(prev => prev ? { ...prev, isLoading: false, isComplete: true } : null);
         
         setIsLoading(false);
-    }, [goal]);
+    }, [goal, apiKey]);
 
     const isChainComplete = finalAnswerStep?.isComplete;
 
@@ -126,12 +133,18 @@ const PlannerExecutorDemo: React.FC = () => {
                     />
                     <button
                         onClick={runChain}
-                        disabled={isLoading || !goal}
+                        disabled={isLoading || !goal || !isApiKeySet}
+                        title={!isApiKeySet ? "Please provide an API key to run this demo" : ""}
                         className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                     >
                         {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
                     </button>
                 </div>
+                 {!isApiKeySet && (
+                    <div className="text-xs text-yellow-400 text-center bg-yellow-900/40 p-2 rounded-md mt-2">
+                        Please provide an API key to run this demo.
+                    </div>
+                )}
             </div>
             
             <div className="space-y-3">
