@@ -6,13 +6,13 @@ import Feedback from '../Feedback';
 
 // Re-using icons from AgentExecutorDemo
 const ActionIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
 );
 const ObservationIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
 );
 const AnswerIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
 );
 
 
@@ -114,7 +114,7 @@ const PlannerExecutorDemo: React.FC = () => {
                 <label htmlFor="goal-input" className="block text-sm font-medium text-gray-400">
                     Enter a complex goal:
                 </label>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                     <input
                         id="goal-input"
                         type="text"
@@ -129,7 +129,7 @@ const PlannerExecutorDemo: React.FC = () => {
                         disabled={isLoading || !goal}
                         className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                     >
-                        {isLoading ? <><Spinner /> Running...</> : 'Run Chain'}
+                        {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
                     </button>
                 </div>
             </div>
@@ -174,7 +174,7 @@ const PlannerExecutorDemo: React.FC = () => {
                                         {step.type === 'action' ? <ActionIcon /> : <ObservationIcon />}
                                         {step.title}
                                     </p>
-                                    <div className="text-gray-300 text-sm whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md">
+                                    <div className="text-gray-300 text-sm whitespace-pre-wrap bg-gray-900/20 p-2.5 rounded-md break-words">
                                         {step.content}
                                     </div>
                                 </div>

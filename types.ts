@@ -9,6 +9,7 @@ export enum StrategyId {
   REFLEXION = 'reflexion',
   PLANNER_EXECUTOR = 'planner_executor',
   TREE_OF_THOUGHTS = 'tree_of_thoughts',
+  CUSTOM = 'custom',
 }
 
 export type Priority = 'low' | 'medium' | 'high';

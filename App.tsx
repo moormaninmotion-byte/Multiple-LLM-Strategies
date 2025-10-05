@@ -1,21 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { STRATEGIES } from './constants';
 import type { StrategyId } from './types';
 import CodeBlock from './components/CodeBlock';
 import StrategyDiagram from './components/StrategyDiagram';
+import MenuIcon from './components/icons/MenuIcon';
 
 const App: React.FC = () => {
   const [activeStrategyId, setActiveStrategyId] = useState<StrategyId>(STRATEGIES[0].id);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const activeStrategy = useMemo(() => {
     return STRATEGIES.find(s => s.id === activeStrategyId)!;
+  }, [activeStrategyId]);
+
+  useEffect(() => {
+    setIsSidebarOpen(false);
   }, [activeStrategyId]);
 
   const DemoComponent = activeStrategy.demoComponent;
 
   if (!process.env.API_KEY) {
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+        <div className="flex items-center justify-center h-screen bg-gray-900 text-white p-4">
             <div className="bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center">
                 <h2 className="font-bold text-lg mb-2">Configuration Error</h2>
                 <p>The `API_KEY` environment variable is not set.</p>
@@ -26,9 +32,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-900 text-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 border-r border-gray-800 p-6 flex flex-col fixed h-full">
+      <aside className={`w-64 bg-gray-900 border-r border-gray-800 p-6 flex-flex-col fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <h1 className="text-xl font-bold text-white mb-8">LLM Chaining</h1>
         <nav className="flex flex-col space-y-1">
           {STRATEGIES.map(strategy => (
@@ -46,12 +52,29 @@ const App: React.FC = () => {
           ))}
         </nav>
       </aside>
+      
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-6">
+      <main className="flex-1 md:ml-64 p-4 md:p-6">
         <div className="max-w-5xl mx-auto space-y-10">
+          
+          {/* Mobile Header */}
+          <div className="md:hidden flex items-center justify-between pb-4 border-b border-gray-800">
+             <h1 className="text-xl font-bold text-white">LLM Chaining</h1>
+             <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-400 hover:text-white" aria-label="Open menu">
+                <MenuIcon className="w-6 h-6" />
+             </button>
+          </div>
+
           {/* Hero Section */}
-          <section className="text-center py-6 border-b border-gray-800 mb-10">
+          <section className="text-center py-6 border-b border-gray-800 md:mb-10">
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">LLM Chaining Explorer</h1>
               <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-400 font-body">
                   A curation of practical information on methods for LLM chaining.
@@ -141,6 +164,11 @@ const App: React.FC = () => {
               <DemoComponent />
             </div>
           </section>
+
+          <footer className="text-center pt-8 pb-4 text-xs text-gray-500 border-t border-gray-800">
+             <p>This is a demonstration application. AI-generated content may be inaccurate or incomplete.</p>
+             <p className="mt-1">&copy; 2024 LLM Chaining Explorer. All rights reserved.</p>
+          </footer>
         </div>
       </main>
     </div>

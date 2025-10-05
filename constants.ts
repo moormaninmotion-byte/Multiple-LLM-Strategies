@@ -8,6 +8,7 @@ import MapReduceDemo from './components/demos/MapReduceDemo';
 import ReflexionDemo from './components/demos/ReflexionDemo';
 import PlannerExecutorDemo from './components/demos/PlannerExecutorDemo';
 import TreeOfThoughtsDemo from './components/demos/TreeOfThoughtsDemo';
+import CustomChainDemo from './components/demos/CustomChainDemo';
 
 export const STRATEGIES: Strategy[] = [
   {
@@ -88,6 +89,39 @@ else:
 print(response)
     `,
     demoComponent: RouterChainDemo,
+  },
+    {
+    id: StrategyId.CUSTOM,
+    name: 'Custom Chain',
+    description: 'Build your own sequential chain from scratch. Define a series of steps, and for each prompt, you can dynamically insert the output of any previous step using the syntax {{output_N}} (e.g., {{output_1}}). This allows for maximum flexibility in creating complex, multi-step reasoning and generation workflows.',
+    useCases: [
+        'Creating complex content from a single idea: generate a concept (step 1), outline a structure (step 2), write a draft (step 3), and then refine the tone (step 4).',
+        'Simulating a "chain of thought" process by breaking a problem into smaller parts and solving each one sequentially.',
+        'Prototyping and testing novel chaining strategies before implementing them in production code.',
+    ],
+    pseudoCode: `
+# 1. Define the steps in your chain
+steps = [
+  "Generate a fictional character name.",
+  "Write a short backstory for the character named: {{output_1}}.",
+  "Describe a challenge that character might face, based on their backstory: {{output_2}}."
+]
+
+# 2. Execute the chain sequentially
+outputs = []
+for prompt_template in steps:
+  # Replace placeholders with previous outputs
+  prompt = prompt_template.replace("{{output_1}}", outputs[0] if len(outputs) > 0 else "")
+  prompt = prompt.replace("{{output_2}}", outputs[1] if len(outputs) > 1 else "")
+  
+  # Call the LLM and store the result
+  result = llm.generate(prompt)
+  outputs.append(result)
+
+# The final result is the output of the last step
+print(outputs[-1])
+    `,
+    demoComponent: CustomChainDemo,
   },
   {
     id: StrategyId.AGENT_EXECUTOR,

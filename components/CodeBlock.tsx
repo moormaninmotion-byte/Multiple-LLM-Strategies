@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import CopyIcon from './icons/CopyIcon';
 import CheckIcon from './icons/CheckIcon';
@@ -25,7 +24,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code }) => {
       >
         {isCopied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <CopyIcon className="w-4 h-4" />}
       </button>
-      <pre className="p-4 text-sm text-gray-300 overflow-x-auto">
+      <pre tabIndex={0} className="p-4 text-sm text-gray-300 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800/50 rounded-lg">
         <code className="language-python font-mono">{code.trim()}</code>
       </pre>
     </div>

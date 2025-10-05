@@ -126,7 +126,7 @@ const MapReduceDemo: React.FC = () => {
                     <label htmlFor="query-input" className="block text-sm font-medium text-gray-400 mb-2">
                         Query:
                     </label>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <input
                             id="query-input"
                             type="text"
@@ -141,7 +141,7 @@ const MapReduceDemo: React.FC = () => {
                             disabled={isLoading || !document || !query}
                             className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-blue-900/50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 text-sm"
                         >
-                            {isLoading ? <><Spinner /> Running...</> : 'Run Chain'}
+                            {isLoading ? <><Spinner /> <span role="status">Running...</span></> : 'Run Chain'}
                         </button>
                     </div>
                 </div>

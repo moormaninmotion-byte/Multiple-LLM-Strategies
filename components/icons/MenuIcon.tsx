@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const MenuIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -11,11 +11,12 @@ const CheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    aria-hidden="true"
     {...props}
   >
-    <path d="M20 6 9 17l-5-5" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 );
 
-export default CheckIcon;
+export default MenuIcon;
